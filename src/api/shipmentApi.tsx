@@ -24,6 +24,13 @@ export async function fetchShipmentById(id: string): Promise<ResponseDTO<Shipmen
   return res.json();
 }
 
+export async function fetchShipmentByOrderId(id: string): Promise<ResponseDTO<ShipmentDTO>> {
+  const res = await fetch(`${BASE_URL}/fetchShipmentDetails/order/${id}`, {
+    headers: getAuthHeader(),
+  });
+  return res.json();
+}
+
 
 export async function addShipment(data: ShipmentRequestDTO): Promise<ResponseDTO<ShipmentDTO>> {
   const res = await fetch(`${BASE_URL}/addShipmentDetails`, {

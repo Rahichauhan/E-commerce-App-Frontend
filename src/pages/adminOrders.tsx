@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   getAllOrders,
   getOrdersByCustomerId,
@@ -6,6 +6,7 @@ import {
 } from '../api/orderApi';
 import type { OrderResponseDTO } from '../types/order';
 import OrderDetails from '../components/OrderDetails';
+import AdminLayout from '../layouts/AdminLayout';
 
 export default function AdminOrderManagementPage() {
   const [orders, setOrders] = useState<OrderResponseDTO[]>([]);
@@ -77,39 +78,54 @@ export default function AdminOrderManagementPage() {
   };
 
   return (
-    <div>
-      <h2>Admin Order Management</h2>
+    <AdminLayout>
+      <h2 className="text-xl font-bold mb-4">Admin Order Management</h2>
 
-      <div style={{ marginBottom: '1rem' }}>
+      <div className="mb-4 flex space-x-2">
         <input
           type="text"
           placeholder="Enter Customer ID"
           value={customerId}
           onChange={(e) => setCustomerId(e.target.value)}
+          className="border p-2 rounded"
         />
-        <button onClick={fetchOrdersByCustomer}>Search by Customer</button>
-        <button onClick={fetchAllOrders} style={{ marginLeft: '1rem' }}>
+        <button
+          onClick={fetchOrdersByCustomer}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Search by Customer
+        </button>
+        <button
+          onClick={fetchAllOrders}
+          className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+        >
           Show All Orders
         </button>
       </div>
 
       {loading && <p>Loading...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-
+      {error && <p className="text-red-600">{error}</p>}
       {orders.length === 0 && !error && <p>No orders found.</p>}
 
-      <ul>
+      <ul className="space-y-2">
         {orders.map((order) => (
-          <li key={order.orderId}>
+          <li key={order.orderId} className="border p-3 rounded">
             <strong>Order #{order.orderId}</strong> — Status: <em>{order.orderStatus}</em>{' '}
-            <button onClick={() => fetchOrderDetails(order.orderId)}>
+            <button
+              onClick={() => fetchOrderDetails(order.orderId)}
+              className="ml-2 px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
+            >
               View Details
             </button>
           </li>
         ))}
       </ul>
 
-      {selectedOrder && <OrderDetails order={selectedOrder} />}
-    </div>
+      {selectedOrder && (
+        <div className="mt-4">
+          <OrderDetails order={selectedOrder} />
+        </div>
+      )}
+    </AdminLayout>
   );
 }

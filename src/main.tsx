@@ -12,8 +12,7 @@ import UserShipmentPage from './pages/UserShipmentPage.tsx'
 import AdminShipmentPage from './pages/AdminShipmentPage.tsx'
 
 import OrderListPage from './components/OrderListPage.tsx'
-import OrderDetails from './components/OrderDetails.tsx'
-import AdminOrderManagementPage from './pages/adminOrders.tsx'
+import AdminOrderManagementPage from './pages/AdminOrders.tsx'
 import PlaceOrderPage from './pages/PlaceOrderPage.tsx'
 
 createRoot(document.getElementById('root')!).render(
@@ -23,11 +22,14 @@ createRoot(document.getElementById('root')!).render(
     <Route path='/' element={ <App />} />
     <Route path='/home' element={ <HomePage />} />
     <Route path='/admin-dashboard' element={<AdminInventoryPage/>}/>
+    <Route path='/admin-inventory' element={<AdminInventoryPage/>}/>
     <Route path='/error' element={ <Error />} />
     <Route path='/logout' element={ <Logout />} />
     <Route path="/shipment" element={<UserShipmentPage/>} />
     <Route path="/admin/shipment" element={<AdminShipmentPage />} />
-   <Route path="/admin/order" element={<AdminOrderManagementPage/>}/>
+    <Route path="/admin/order" element={<AdminOrderManagementPage/>}/>
+    <Route path="/place-order" element={<PlaceOrderPage />}/>
+    <Route path="/my-orders" element={<OrderListPage />}/>
    </Routes>
    </BrowserRouter>
   </StrictMode>,

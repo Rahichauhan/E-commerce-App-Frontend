@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaShoppingCart, FaCube } from "react-icons/fa";
+import { FaShoppingCart, FaCube, FaShoppingBag } from "react-icons/fa";
 import CartHoverList from "./Cart"; // Import the new component
 
 interface Product {
@@ -94,7 +94,7 @@ const HomePage: React.FC = () => {
         if (productDetails) {
           return {
             ...productDetails, // Copy all properties from the Product
-            selectedQuantity: cartItem.quantity,cartItemId : cartItem.id // Override with the selected quantity
+            selectedQuantity: cartItem.quantity, cartItemId: cartItem.id // Override with the selected quantity
           };
         }
 
@@ -108,9 +108,9 @@ const HomePage: React.FC = () => {
     fetchcartDetails();
   }, [products]);
 
-  useEffect(()=>{
+  useEffect(() => {
 
-  },[cart])
+  }, [cart])
 
   const addToCart = async (product: Product) => {
     const qty = quantities[product.inventoryId] || 1;
@@ -134,33 +134,33 @@ const HomePage: React.FC = () => {
       body: JSON.stringify(cartitems)
     });
     if (!res.ok) throw new Error("Failed to fetch inventory");
-      const json = await res.json();
-      const fetchedcart = Array.isArray(json.data.orderItemList) ? json.data.orderItemList : [];
-      const cartItems = fetchedcart.map((cartItem: any) => {
-        // Find the full product details from the product list
-        const productDetails = products.find(p => p.inventoryId.match(cartItem.productId));
-        console.log(productDetails)
-        // If a matching product is found, create the new CartItem object
-        if (productDetails) {
-          return {
-            ...productDetails, // Copy all properties from the Product
-            selectedQuantity: cartItem.quantity, // Override with the selected quantity
-          };
-        }
+    const json = await res.json();
+    const fetchedcart = Array.isArray(json.data.orderItemList) ? json.data.orderItemList : [];
+    const cartItems = fetchedcart.map((cartItem: any) => {
+      // Find the full product details from the product list
+      const productDetails = products.find(p => p.inventoryId.match(cartItem.productId));
+      console.log(productDetails)
+      // If a matching product is found, create the new CartItem object
+      if (productDetails) {
+        return {
+          ...productDetails, // Copy all properties from the Product
+          selectedQuantity: cartItem.quantity, // Override with the selected quantity
+        };
+      }
 
-        // Handle cases where a product isn't found in the list (e.g., return null or an error)
-        return null;
-      }).filter(Boolean);
-      console.log(cartItems)
-      setCart(cartItems);
-      console.log(json)
+      // Handle cases where a product isn't found in the list (e.g., return null or an error)
+      return null;
+    }).filter(Boolean);
+    console.log(cartItems)
+    setCart(cartItems);
+    console.log(json)
   };
 
   // New function to remove an item from the cart
   const handleRemoveItem = async (cartItemId: string) => {
     const uuid = localStorage.getItem("uid");
     const token = localStorage.getItem("jwt");
-    console.log("cartItemid",cartItemId);
+    console.log("cartItemid", cartItemId);
     const res = await fetch(`http://localhost:8090/cart/remove-item/${uuid}/${cartItemId}`, {
       method: "PUT",
       headers: {
@@ -169,30 +169,30 @@ const HomePage: React.FC = () => {
       },
     });
     if (!res.ok) throw new Error(JSON.stringify(await res.json()));
-      const json = await res.json();
-      const fetchedcart = Array.isArray(json.data.orderItemList) ? json.data.orderItemList : [];
-      const cartItems = fetchedcart.map((cartItem: any) => {
-        // Find the full product details from the product list
-        const productDetails = products.find(p => p.inventoryId.match(cartItem.productId));
-        console.log(productDetails)
-        // If a matching product is found, create the new CartItem object
-        if (productDetails) {
-          return {
-            ...productDetails, // Copy all properties from the Product
-            selectedQuantity: cartItem.quantity, // Override with the selected quantity
-          };
-        }
+    const json = await res.json();
+    const fetchedcart = Array.isArray(json.data.orderItemList) ? json.data.orderItemList : [];
+    const cartItems = fetchedcart.map((cartItem: any) => {
+      // Find the full product details from the product list
+      const productDetails = products.find(p => p.inventoryId.match(cartItem.productId));
+      console.log(productDetails)
+      // If a matching product is found, create the new CartItem object
+      if (productDetails) {
+        return {
+          ...productDetails, // Copy all properties from the Product
+          selectedQuantity: cartItem.quantity, // Override with the selected quantity
+        };
+      }
 
-        // Handle cases where a product isn't found in the list (e.g., return null or an error)
-        return null;
-      }).filter(Boolean);
-      console.log(cartItems)
-      setCart(cartItems);
-      console.log(json);
+      // Handle cases where a product isn't found in the list (e.g., return null or an error)
+      return null;
+    }).filter(Boolean);
+    console.log(cartItems)
+    setCart(cartItems);
+    console.log(json);
   };
 
   // New function to update the quantity of a cart item
-  const handleUpdateQuantity = async (newQuantity: number,cartItemId:string) => {
+  const handleUpdateQuantity = async (newQuantity: number, cartItemId: string) => {
     const uuid = localStorage.getItem("uid");
     const token = localStorage.getItem("jwt");
     await fetch(`http://localhost:8090/cart/update-item/${uuid}/${cartItemId}/${newQuantity}`, {
@@ -203,14 +203,14 @@ const HomePage: React.FC = () => {
       },
     });
     setCart((prevCart) =>
-      prevCart.map((item) =>{
-        if( item.cartItemId == cartItemId){
+      prevCart.map((item) => {
+        if (item.cartItemId == cartItemId) {
           item.selectedQuantity = newQuantity;
         }
         return item;
       })
     );
-    
+
   };
 
   const handleLogout = () => {
@@ -251,6 +251,16 @@ const HomePage: React.FC = () => {
             >
               Logout
             </button>
+
+            {/* My Orders Button */}
+            <button
+              onClick={() => navigate("/my-orders")}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors duration-200"
+            >
+              <FaShoppingBag size={18} />
+              My Orders
+            </button>
+
             {/* Cart Icon with Hover List */}
             <div
               className="relative"
@@ -259,9 +269,11 @@ const HomePage: React.FC = () => {
                   setIsHoveringCart(true);
                 }, 300)
               }
-              onMouseLeave={() => setTimeout(() => {
+              onMouseLeave={() =>
+                setTimeout(() => {
                   setIsHoveringCart(false);
-                }, 300)}
+                }, 300)
+              }
             >
               <div className="cursor-pointer">
                 <FaShoppingCart
@@ -283,9 +295,11 @@ const HomePage: React.FC = () => {
                 />
               )}
             </div>
+            
           </div>
         </div>
       </header>
+
 
       {/* MAIN */}
       <main className="container mx-auto p-4 md:p-8">

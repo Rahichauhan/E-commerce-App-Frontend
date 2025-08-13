@@ -1,5 +1,5 @@
 
-import React from "react";
+import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { FaTrash, FaPlus, FaMinus } from "react-icons/fa";
 
@@ -35,7 +35,7 @@ const CartHoverList: React.FC<CartHoverListProps> = ({
 
   const handleProceedToCart = () => {
     onNavigateToCart();
-    navigate("/cart", { state: { cart } });
+    navigate("/place-order", { state: { cart } });
   };
 
   const calculateTotal = () => {
