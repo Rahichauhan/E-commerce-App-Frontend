@@ -2,8 +2,9 @@ import type { ShipmentDTO, ResponseDTO, ShipmentRequestDTO } from "../types/ship
 
 const BASE_URL = "http://localhost:8080/api/shipment";
 
+
 const getAuthHeader = () => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("jwt");
   return {
     Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
@@ -11,7 +12,7 @@ const getAuthHeader = () => {
 };
 
 export async function fetchShipments(): Promise<ResponseDTO<ShipmentDTO[]>> {
-  const res = await fetch(`${BASE_URL}/all`, {
+  const res = await fetch(`${BASE_URL}/fetchAllShipment`, {
     headers: getAuthHeader(),
   });
   return res.json();

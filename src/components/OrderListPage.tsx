@@ -9,7 +9,7 @@ export default function OrderListPage() {
   const [error, setError] = useState<string | null>(null);
   const [cancelMessage, setCancelMessage] = useState<string | null>(null);
 
-  const customerId = localStorage.getItem('customerId');
+  const customerId = localStorage.getItem('uid');
 
   useEffect(() => {
     if (customerId) {
@@ -33,9 +33,9 @@ export default function OrderListPage() {
     }
   };
 
-  const handleCancel = async (orderId: string) => {
+  const handleCancel = async (id: string) => {
     try {
-      const response = await cancelOrder(orderId);
+      const response = await cancelOrder(id);
       if (response.status === 200) {
         setCancelMessage('Order cancelled successfully');
         if (customerId) fetchOrders(customerId);
@@ -63,7 +63,7 @@ export default function OrderListPage() {
           >
             <div className="flex justify-between items-center">
               <div>
-                <p className="font-semibold">Order #{order.orderId}</p>
+                <p className="font-semibold">Order {order.id}</p>
                 <p className="text-gray-500">Status: {order.orderStatus}</p>
               </div>
               <div className="flex space-x-2">
@@ -75,12 +75,12 @@ export default function OrderListPage() {
                   }
                   className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
                 >
-                  {selectedOrder?.orderId === order.orderId
+                  {selectedOrder?.id === order.id
                     ? 'Hide Details'
                     : 'View Details'}
                 </button>
 
-                {selectedOrder?.orderId === order.orderId && (
+                {selectedOrder?.id === order.id && (
                   <div className="mt-4 border-t pt-4">
                     <OrderDetails order={selectedOrder} />
                   </div>
@@ -88,7 +88,7 @@ export default function OrderListPage() {
                 
                 {order.orderStatus !== 'CANCELLED' && (
                   <button
-                    onClick={() => handleCancel(order.orderId)}
+                    onClick={() => handleCancel(order.id)}
                     className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
                   >
                     Cancel Order

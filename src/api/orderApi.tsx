@@ -4,10 +4,10 @@ import type {
   OrderResponseDTO,
 } from '../types/order';
 
-const BASE_URL = 'http://localhost:8080/api/orders';
+const BASE_URL = 'http://localhost:8083/api/orders';
 
 const getAuthHeader = () => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('jwt');
   return {
     Authorization: `Bearer ${token}`,
     'Content-Type': 'application/json',

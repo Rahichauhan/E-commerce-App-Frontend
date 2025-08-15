@@ -1,66 +1,64 @@
-import { useState, type ChangeEvent, type FormEvent } from 'react';
-import { addShipment } from '../api/shipmentApi';
-import type { ShipmentRequestDTO } from '../types/shipment';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { fetchShipments } from '../api/shipmentApi';
+import type { ShipmentDTO } from '../types/shipment';
 
-export default function ShipmentForm() {
-  const [orderId, setOrderId] = useState<string>('');
-  const [address, setAddress] = useState<string>('');
+export default function AdminShipmentPage() {
+  const [shipments, setShipments] = useState<ShipmentDTO[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const token = localStorage.getItem('token');
+  console.log('Admin token:', token); // ✅ log the token
 
-    const shipmentData: ShipmentRequestDTO = {
-      orderId,
-      address,
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadShipments = async () => {
+      try {
+        const res = await fetchShipments ();
+        if (res.data) {
+          setShipments(res.data);
+        } else {
+          setError(res.message || 'No shipment data found');
+        }
+      } catch (err) {
+        setError('Failed to fetch shipment data');
+      }
     };
 
-    try {
-      await addShipment(shipmentData);
-      alert('Shipment Added Successfully');
-      setOrderId('');
-      setAddress('');
-    } catch (err) {
-      alert('Error adding shipment');
-      console.error(err);
-    }
-  };
-
-  const handleOrderIdChange = (e: ChangeEvent<HTMLInputElement>) => setOrderId(e.target.value);
-  const handleAddressChange = (e: ChangeEvent<HTMLInputElement>) => setAddress(e.target.value);
+    loadShipments();
+  }, []);
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-white shadow-md rounded-lg p-6 space-y-4 w-full max-w-md"
-    >
-      <h3 className="text-lg font-semibold text-gray-800">Add New Shipment</h3>
+    <div className="max-w-5xl mx-auto p-4">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">All Shipments</h2>
+        <button
+          onClick={() => navigate('/admin/shipment-details')}
+          className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded transition duration-200"
+        >
+          Modify Shipment
+        </button>
+      </div>
 
-      <input
-        type="text"
-        placeholder="Order ID (UUID)"
-        value={orderId}
-        onChange={handleOrderIdChange}
-        required
-        pattern="[0-9a-fA-F\-]{36}"
-        title="Enter a valid UUID"
-        className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-      />
+      {error && <p className="text-red-600 mb-4">{error}</p>}
 
-      <input
-        type="text"
-        placeholder="Shipping Address"
-        value={address}
-        onChange={handleAddressChange}
-        required
-        className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-      />
-
-      <button
-        type="submit"
-        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md transition duration-200"
-      >
-        Add Shipment
-      </button>
-    </form>
+      <div className="space-y-4">
+        {shipments.map((shipment) => (
+          <div
+            key={shipment.shipmentId}
+            className="border border-gray-300 p-4 rounded-md bg-white shadow-sm"
+          >
+            <p><strong>Shipment ID:</strong> {shipment.shipmentId}</p>
+            <p><strong>Order ID:</strong> {shipment.orderId}</p>
+            <p><strong>Status:</strong> {shipment.shipmentStatus}</p>
+            <p><strong>Address:</strong> {shipment.shippedToAddress}</p>
+            <p><strong>Estimated Arrival:</strong> {shipment.estimatedArrival}</p>
+            <p><strong>Created At:</strong> {new Date(shipment.createdAt).toLocaleString()}</p>
+            <p><strong>Updated At:</strong> {new Date(shipment.updatedAt).toLocaleString()}</p>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

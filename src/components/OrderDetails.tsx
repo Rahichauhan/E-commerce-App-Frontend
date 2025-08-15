@@ -18,7 +18,7 @@ export default function OrderDetails({ order }: OrderDetailsProps) {
       setLoading(true);
       setError(null);
       try {
-        const res: ResponseDTO<ShipmentDTO> = await fetchShipmentByOrderId(order.orderId);
+        const res: ResponseDTO<ShipmentDTO> = await fetchShipmentByOrderId(order.id);
         if (res.data) {
           setShipment(res.data);
         } else {
@@ -36,7 +36,7 @@ export default function OrderDetails({ order }: OrderDetailsProps) {
   return (
     <div className="bg-gray-50 p-4 rounded-lg shadow-inner">
       <h3 className="text-lg font-semibold mb-2 text-gray-800">
-        Order Details for #{order.orderId}
+        Order Details for {order.id}
       </h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 mb-4 text-sm text-gray-700">

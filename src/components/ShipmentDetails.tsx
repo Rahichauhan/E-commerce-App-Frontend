@@ -17,15 +17,29 @@ interface ShipmentDetailsProps {
   isAdmin: boolean;
 }
 
+const shipmentStatuses = [
+  'PENDING',
+  'PROCESSING',
+  'SHIPPED',
+  'IN_TRANSIT',
+  'OUT_FOR_DELIVERY',
+  'DELIVERED',
+  'CANCELLED',
+  'RETURNED',
+  'FAILED_DELIVERY',
+];
+
 export default function ShipmentDetails({ isAdmin }: ShipmentDetailsProps) {
   const [shipmentId, setShipmentId] = useState<string>('');
   const [shipment, setShipment] = useState<Shipment | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<string>('PENDING');
 
   const handleFetch = async () => {
     try {
       const res = await fetchShipmentById(shipmentId);
       if (res.data) {
         setShipment(res.data as Shipment);
+        setSelectedStatus(res.data.shipmentStatus); // set current status in dropdown
       } else {
         setShipment(null);
         alert('Shipment not found');
@@ -36,9 +50,9 @@ export default function ShipmentDetails({ isAdmin }: ShipmentDetailsProps) {
     }
   };
 
-  const handleStatusUpdate = async (status: string) => {
+  const handleStatusUpdate = async () => {
     try {
-      await updateShipmentStatus(shipmentId, status);
+      await updateShipmentStatus(shipmentId, selectedStatus);
       await handleFetch();
     } catch {
       alert('Error updating status');
@@ -91,25 +105,43 @@ export default function ShipmentDetails({ isAdmin }: ShipmentDetailsProps) {
           <p><strong>Address:</strong> {shipment.shippedToAddress}</p>
 
           {isAdmin && (
-            <div className="flex flex-wrap gap-2 mt-4">
-              <button
-                onClick={() => handleStatusUpdate('DELIVERED')}
-                className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition duration-200"
-              >
-                Mark Delivered
-              </button>
-              <button
-                onClick={handleCancel}
-                className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-md transition duration-200"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDelete}
-                className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition duration-200"
-              >
-                Delete
-              </button>
+            <div className="mt-4 space-y-4">
+              <div className="flex gap-2 items-center">
+                <label htmlFor="status" className="font-medium">Update Status:</label>
+                <select
+                  id="status"
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  className="border border-gray-300 p-2 rounded-md"
+                >
+                  {shipmentStatuses.map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={handleStatusUpdate}
+                  className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition duration-200"
+                >
+                  Update Status
+                </button>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={handleCancel}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-md transition duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition duration-200"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           )}
         </div>
