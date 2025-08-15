@@ -24,6 +24,7 @@ export default function AdminOrderManagementPage() {
     setError(null);
     try {
       const response = await getAllOrders();
+      console.log(response);
       if (response.data) {
         setOrders(response.data);
       } else {
