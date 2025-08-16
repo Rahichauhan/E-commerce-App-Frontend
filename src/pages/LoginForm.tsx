@@ -34,7 +34,7 @@ const LoginForm: React.FC<MyProps> = ({setSuccessMessage,setErrorMessage}) => {
         localStorage.setItem("login","true");
         localStorage.setItem("jwt",data.data);
         localStorage.setItem("useremail",email);
-        const response2 = await fetch(new URL(`http://localhost:8090/get-user-info?email=${email}`), {
+        const response2 = await fetch(new URL(`http://localhost:8090/user/get-user-info?email=${email}`), {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -46,6 +46,8 @@ const LoginForm: React.FC<MyProps> = ({setSuccessMessage,setErrorMessage}) => {
         const mydata = await response2.json();
         localStorage.setItem("uid",mydata.data.id)
         console.log(mydata.data)
+      }else{
+        console.log(await response2.json());
       }
 
         //

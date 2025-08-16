@@ -107,6 +107,7 @@ const HomePage: React.FC = () => {
     const fetchcartDetails = async () => {
       const uuid = localStorage.getItem("uid");
       const token = localStorage.getItem("jwt");
+      console.log(uuid);
       const res = await fetch(`http://localhost:8081/cart/get-cart/${uuid}`, {
         method: "GET",
         headers: {
@@ -134,9 +135,9 @@ const HomePage: React.FC = () => {
       setCart(cartItems);
       setAvailableCart(true);
     };
-    if (products.length > 0) {
+    
       fetchcartDetails();
-    }
+    
   }, [products]);
   function isPasswordUpdate(obj: any): obj is Password {
     return (
@@ -305,7 +306,7 @@ const HomePage: React.FC = () => {
           </div>
           <div className="flex items-center space-x-6">
            
-              <div className="cursor-pointer flex items-center gap-2 text-lg font-medium text-gray-700 transition-colors">
+              <div className="flex items-center gap-2 text-lg font-medium text-gray-700 transition-colors">
                 Welcome,
                 <span className="text-blue-600 font-semibold">  {userProfile?.firstName}</span>
               </div>
