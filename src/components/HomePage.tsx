@@ -19,9 +19,9 @@ interface CartItem extends Product {
   selectedQuantity: number;
 }
 
-interface Password{
-  oldPassword:string,
-  newPassword:string
+interface Password {
+  oldPassword: string,
+  newPassword: string
 }
 
 interface UserProfile {
@@ -42,6 +42,7 @@ const HomePage: React.FC = () => {
   const [isHoveringCart, setIsHoveringCart] = useState(false);
   const [isHoveringUser, setIsHoveringUser] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [availableCart, setAvailableCart] = useState(false);
   const useremail = localStorage.getItem("useremail");
   const navigate = useNavigate();
 
@@ -50,7 +51,11 @@ const HomePage: React.FC = () => {
     if (loginKey) {
       setIsLoggedIn(true);
     } else {
-      navigate("/error", { replace: true });
+      navigate("/error", {
+        replace: true,
+        state: { message: "Please log in to access this page." }
+      });
+
     }
   }, [navigate]);
 
@@ -98,6 +103,7 @@ const HomePage: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    setAvailableCart(false);
     const fetchcartDetails = async () => {
       const uuid = localStorage.getItem("uid");
       const token = localStorage.getItem("jwt");
@@ -109,7 +115,9 @@ const HomePage: React.FC = () => {
         },
       });
 
-      if (!res.ok) throw new Error("Failed to fetch inventory");
+      if (!res.ok) {
+        throw new Error("Failed to fetch inventory");
+      };
       const json = await res.json();
       const fetchedcart = Array.isArray(json.data.orderItemList) ? json.data.orderItemList : [];
       const cartItems = fetchedcart.map((cartItem: any) => {
@@ -124,20 +132,21 @@ const HomePage: React.FC = () => {
         return null;
       }).filter(Boolean);
       setCart(cartItems);
+      setAvailableCart(true);
     };
     if (products.length > 0) {
       fetchcartDetails();
     }
   }, [products]);
-function isPasswordUpdate(obj: any): obj is Password {
-  return (
-    typeof obj === 'object' &&
-    obj !== null &&
-    typeof obj.oldPassword === 'string' &&
-    typeof obj.newPassword === 'string'
-  );
-}
-  const handleUpdateUser = async (field: string, value:  Password | string | number) => {
+  function isPasswordUpdate(obj: any): obj is Password {
+    return (
+      typeof obj === 'object' &&
+      obj !== null &&
+      typeof obj.oldPassword === 'string' &&
+      typeof obj.newPassword === 'string'
+    );
+  }
+  const handleUpdateUser = async (field: string, value: Password | string | number) => {
     const token = localStorage.getItem("jwt");
     const userEmail = localStorage.getItem("useremail");
     if (!token || !userEmail) throw new Error("Authentication details missing.");
@@ -154,10 +163,11 @@ function isPasswordUpdate(obj: any): obj is Password {
         break;
       case "password":
         url = `http://localhost:8090/user/update-password`;
-        body = { 
-          email:userEmail,
-          oldPassword:  isPasswordUpdate(value)? value.oldPassword:"",
-          newPassword:isPasswordUpdate(value)?value.newPassword:"" };
+        body = {
+          email: userEmail,
+          oldPassword: isPasswordUpdate(value) ? value.oldPassword : "",
+          newPassword: isPasswordUpdate(value) ? value.newPassword : ""
+        };
         break;
       case "phone":
         url = `http://localhost:8090/user/update-phone/${userEmail}?phone=${value}`;
@@ -175,7 +185,7 @@ function isPasswordUpdate(obj: any): obj is Password {
       body: JSON.stringify(body),
     });
 
-    if (!res.ok){
+    if (!res.ok) {
       const json = await res.json();
       throw new Error(json.message)
     };
@@ -294,36 +304,11 @@ function isPasswordUpdate(obj: any): obj is Password {
             </span>
           </div>
           <div className="flex items-center space-x-6">
-            <div
-              className="relative"
-              onMouseEnter={() => setTimeout(() => {
-                  setIsHoveringUser(true);
-                }, 300)
-}
-              onMouseLeave={() => setTimeout(() => {
-                  setIsHoveringUser(false);
-                }, 300)
-}
-            >
-              <div className="cursor-pointer flex items-center gap-2 text-lg font-medium text-gray-700 hover:text-blue-600 transition-colors">
-                <FaUser size={18} />
-                <span className="text-blue-600 font-semibold">{useremail}</span>
+           
+              <div className="cursor-pointer flex items-center gap-2 text-lg font-medium text-gray-700 transition-colors">
+                Welcome,
+                <span className="text-blue-600 font-semibold">  {userProfile?.firstName}</span>
               </div>
-              {isHoveringUser && userProfile && (
-                <UserProfileHoverList
-                  user={userProfile}
-                  onUpdateUser={handleUpdateUser}
-                  onClose={() => setIsHoveringUser(false)}
-                />
-              )}
-            </div>
-
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 text-sm font-medium text-red-600 border border-red-600 rounded-lg hover:bg-red-50 hover:text-red-700 transition-colors duration-200"
-            >
-              Logout
-            </button>
 
             <button
               onClick={() => navigate("/my-orders")}
@@ -336,13 +321,13 @@ function isPasswordUpdate(obj: any): obj is Password {
             <div
               className="relative"
               onMouseEnter={() => setTimeout(() => {
-                  setIsHoveringCart(true);
-                }, 300)
-}
+                setIsHoveringCart(true);
+              }, 300)
+              }
               onMouseLeave={() => setTimeout(() => {
-                  setIsHoveringCart(false);
-                }, 300)
-}
+                setIsHoveringCart(false);
+              }, 300)
+              }
             >
               <div className="cursor-pointer">
                 <FaShoppingCart
@@ -357,13 +342,43 @@ function isPasswordUpdate(obj: any): obj is Password {
               </div>
               {isHoveringCart && (
                 <CartHoverList
+                  available={availableCart}
                   cart={cart}
                   onRemoveItem={handleRemoveItem}
                   onUpdateQuantity={handleUpdateQuantity}
                   onNavigateToCart={handleNavigateToCart}
                 />
               )}
+              
             </div>
+            <div
+                className="relative"
+                onMouseEnter={() => setTimeout(() => {
+                  setIsHoveringUser(true);
+                }, 300)
+                }
+                onMouseLeave={() => setTimeout(() => {
+                  setIsHoveringUser(false);
+                }, 300)
+                }
+              >
+                <FaUser size={21}
+                className="text-gray-600 hover:text-blue-600 transition-colors"
+                 />
+                {isHoveringUser && userProfile && (
+                  <UserProfileHoverList
+                    user={userProfile}
+                    onUpdateUser={handleUpdateUser}
+                    onClose={() => setIsHoveringUser(false)}
+                  />
+                )}
+              </div>
+              <button
+              onClick={handleLogout}
+              className="px-4 py-2 text-sm font-medium text-red-600 border border-red-600 rounded-lg hover:bg-red-50 hover:text-red-700 transition-colors duration-200"
+            >
+              Logout
+            </button>
           </div>
         </div>
       </header>
