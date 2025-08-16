@@ -125,7 +125,11 @@ const HomePage: React.FC = () => {
     const fetchcartDetails = async () => {
       const uuid = localStorage.getItem("uid");
       const token = localStorage.getItem("jwt");
+<<<<<<< HEAD
 
+=======
+      console.log(uuid);
+>>>>>>> 584da8e7d0c6ff025e2acc88a03873d7e51bd26c
       const res = await fetch(`http://localhost:8081/cart/get-cart/${uuid}`, {
         method: "GET",
         headers: {
@@ -160,10 +164,14 @@ const HomePage: React.FC = () => {
       setCart(cartItems as CartItem[]);
       setAvailableCart(true);
     };
+<<<<<<< HEAD
 
     if (products.length > 0) {
+=======
+    
+>>>>>>> 584da8e7d0c6ff025e2acc88a03873d7e51bd26c
       fetchcartDetails();
-    }
+    
   }, [products]);
 
   function isPasswordUpdate(obj: any): obj is Password {
@@ -368,12 +376,20 @@ const HomePage: React.FC = () => {
           </div>
 
           <div className="flex items-center space-x-6">
+<<<<<<< HEAD
             <div className="cursor-pointer flex items-center gap-2 text-lg font-medium text-gray-700">
               Welcome,
               <span className="text-blue-600 font-semibold">
                 {userProfile?.firstName}
               </span>
             </div>
+=======
+           
+              <div className="flex items-center gap-2 text-lg font-medium text-gray-700 transition-colors">
+                Welcome,
+                <span className="text-blue-600 font-semibold">  {userProfile?.firstName}</span>
+              </div>
+>>>>>>> 584da8e7d0c6ff025e2acc88a03873d7e51bd26c
 
             <button
               onClick={() => navigate("/my-orders")}
