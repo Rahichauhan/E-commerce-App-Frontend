@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
-import LoginForm from "./components/LoginForm.tsx";
-import RegisterForm from "./components/RegistrationForm.tsx"
+import LoginForm from "./pages/LoginForm.tsx";
+import RegisterForm from "./pages/RegistrationForm.tsx"
 
 const App = () => {
   const [currentView, setCurrentView] = useState('login');

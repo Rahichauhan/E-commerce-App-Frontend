@@ -1,4 +1,3 @@
-// inside your component file
 import { useState } from 'react';
 import {
   fetchShipmentById,
@@ -37,41 +36,24 @@ export default function ShipmentDetails({ isAdmin }: ShipmentDetailsProps) {
 
   const handleFetch = async () => {
     const res = await fetchShipmentById(shipmentId);
-    if (res.data) {
-      setShipment(res.data);
-      setSelectedStatus(res.data.shipmentStatus);
-    } else {
-      setShipment(null);
-      alert(res.message);
-    }
+    setShipment(res.data);
+    setSelectedStatus(res.data?.shipmentStatus ?? 'PENDING');
   };
 
   const handleStatusUpdate = async () => {
-    const res = await updateShipmentStatus(shipmentId, selectedStatus);
-    if (res.data) {
-      await handleFetch();
-    } else {
-      alert(res.message);
-    }
+    await updateShipmentStatus(shipmentId, selectedStatus);
+    await handleFetch();
   };
 
   const handleCancel = async () => {
     if (!shipment) return;
-    const res = await cancelShipment(shipment.orderId);
-    if (res.data !== null || res.status === 200) {
-      await handleFetch();
-    } else {
-      alert(res.message);
-    }
+    await cancelShipment(shipment.orderId);
+    await handleFetch();
   };
 
   const handleDelete = async () => {
-    const res = await deleteShipment(shipmentId);
-    if (res.data !== null || res.status === 200) {
-      setShipment(null);
-    } else {
-      alert(res.message);
-    }
+    await deleteShipment(shipmentId);
+    setShipment(null);
   };
 
   return (

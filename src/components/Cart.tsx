@@ -1,7 +1,7 @@
 
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import { FaTrash, FaPlus, FaMinus } from "react-icons/fa";
+import { FaTrash, FaPlus, FaMinus, FaExclamationCircle } from "react-icons/fa";
 
 interface Product {
   inventoryId: string;
@@ -14,18 +14,20 @@ interface Product {
 }
 
 interface CartItem extends Product {
-    cartItemId: string,
+  cartItemId: string,
   selectedQuantity: number;
 }
 
 interface CartHoverListProps {
+  available: boolean;
   cart: CartItem[];
   onRemoveItem: (inventoryId: string) => void;
-  onUpdateQuantity: ( newQuantity: number,cartItemId:string) => void;
+  onUpdateQuantity: (newQuantity: number, cartItemId: string) => void;
   onNavigateToCart: () => void;
 }
 
 const CartHoverList: React.FC<CartHoverListProps> = ({
+  available,
   cart,
   onRemoveItem,
   onUpdateQuantity,
@@ -45,11 +47,22 @@ const CartHoverList: React.FC<CartHoverListProps> = ({
     );
   };
 
-  if (cart.length === 0) {
+  if (cart.length === 0 && available) {
     return (
       <div className="absolute top-full right-0 mt-2 w-72 rounded-lg bg-white shadow-xl ring-1 ring-black ring-opacity-5 z-50 p-4 text-center">
         <p className="text-gray-500">Your cart is empty.</p>
       </div>
+    );
+  }
+  if (!available) {
+    return (
+      <div className="absolute top-full right-0 mt-2 w-72 rounded-lg bg-white shadow-xl ring-1 ring-black ring-opacity-5 z-50 p-4 text-center">
+        <div className="flex items-center justify-center gap-2">
+          <FaExclamationCircle className="text-red-500" />
+          <p className="text-gray-500 m-0">Unable to fetch cart</p>
+        </div>
+      </div>
+
     );
   }
 
@@ -72,7 +85,7 @@ const CartHoverList: React.FC<CartHoverListProps> = ({
             <div className="flex items-center space-x-2">
               <button
                 onClick={() =>
-                  onUpdateQuantity(item.selectedQuantity - 1,item.cartItemId)
+                  onUpdateQuantity(item.selectedQuantity - 1, item.cartItemId)
                 }
                 disabled={item.selectedQuantity <= 1}
                 className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
@@ -84,7 +97,7 @@ const CartHoverList: React.FC<CartHoverListProps> = ({
               </span>
               <button
                 onClick={() =>
-                  onUpdateQuantity( item.selectedQuantity + 1,item.cartItemId)
+                  onUpdateQuantity(item.selectedQuantity + 1, item.cartItemId)
                 }
                 disabled={item.selectedQuantity >= item.quantityAvailable}
                 className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
