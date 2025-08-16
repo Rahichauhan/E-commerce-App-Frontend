@@ -30,7 +30,7 @@ const AdminInventoryPage: React.FC = () => {
   // Fetch inventory
   const fetchInventory = async () => {
     try {
-      const res = await apiFetch("http://localhost:8090/api/inventory");
+      const res = await apiFetch("http://localhost:8082/api/inventory");
       if (!res.ok) throw new Error("Failed to fetch inventory");
       const json = await res.json();
       setProducts(Array.isArray(json.data) ? json.data : []);
@@ -53,8 +53,8 @@ const AdminInventoryPage: React.FC = () => {
     try {
       const method = isEditing ? "PUT" : "POST";
       const url = isEditing
-        ? `http://localhost:8090/api/inventory/${form.inventoryId}`
-        : "http://localhost:8090/api/inventory";
+        ? `http://localhost:8082/api/inventory/${form.inventoryId}`
+        : "http://localhost:8082/api/inventory";
 
       const res = await apiFetch(url, {
         method,
@@ -80,7 +80,7 @@ const AdminInventoryPage: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
-      const res = await apiFetch(`http://localhost:8090/api/inventory/${id}`, {
+      const res = await apiFetch(`http://localhost:8082/api/inventory/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete");

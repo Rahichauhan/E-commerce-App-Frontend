@@ -1,3 +1,4 @@
+// inside your component file
 import { useState } from 'react';
 import {
   fetchShipmentById,
@@ -35,46 +36,41 @@ export default function ShipmentDetails({ isAdmin }: ShipmentDetailsProps) {
   const [selectedStatus, setSelectedStatus] = useState<string>('PENDING');
 
   const handleFetch = async () => {
-    try {
-      const res = await fetchShipmentById(shipmentId);
-      if (res.data) {
-        setShipment(res.data as Shipment);
-        setSelectedStatus(res.data.shipmentStatus); // set current status in dropdown
-      } else {
-        setShipment(null);
-        alert('Shipment not found');
-      }
-    } catch (error) {
-      alert('Shipment not found');
+    const res = await fetchShipmentById(shipmentId);
+    if (res.data) {
+      setShipment(res.data);
+      setSelectedStatus(res.data.shipmentStatus);
+    } else {
       setShipment(null);
+      alert(res.message);
     }
   };
 
   const handleStatusUpdate = async () => {
-    try {
-      await updateShipmentStatus(shipmentId, selectedStatus);
+    const res = await updateShipmentStatus(shipmentId, selectedStatus);
+    if (res.data) {
       await handleFetch();
-    } catch {
-      alert('Error updating status');
+    } else {
+      alert(res.message);
     }
   };
 
   const handleCancel = async () => {
     if (!shipment) return;
-    try {
-      await cancelShipment(shipment.orderId);
+    const res = await cancelShipment(shipment.orderId);
+    if (res.data !== null || res.status === 200) {
       await handleFetch();
-    } catch {
-      alert('Error cancelling shipment');
+    } else {
+      alert(res.message);
     }
   };
 
   const handleDelete = async () => {
-    try {
-      await deleteShipment(shipmentId);
+    const res = await deleteShipment(shipmentId);
+    if (res.data !== null || res.status === 200) {
       setShipment(null);
-    } catch {
-      alert('Error deleting shipment');
+    } else {
+      alert(res.message);
     }
   };
 

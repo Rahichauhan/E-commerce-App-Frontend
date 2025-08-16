@@ -45,7 +45,7 @@ const HomePage: React.FC = () => {
           throw new Error("No JWT token found. Please log in again.");
         }
 
-        const res = await fetch("http://localhost:8090/api/inventory", {
+        const res = await fetch("http://localhost:8082/api/inventory", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -75,7 +75,7 @@ const HomePage: React.FC = () => {
     const fetchcartDetails = async () => {
       const uuid = localStorage.getItem("uid");
       const token = localStorage.getItem("jwt");
-      const res = await fetch(`http://localhost:8090/cart/get-cart/${uuid}`, {
+      const res = await fetch(`http://localhost:8081/cart/get-cart/${uuid}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -125,7 +125,7 @@ const HomePage: React.FC = () => {
       price: product.price
     };
     const uuid = localStorage.getItem("uid")
-    const res = await fetch(`http://localhost:8090/cart/add-item/${uuid}`, {
+    const res = await fetch(`http://localhost:8081/cart/add-item/${uuid}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -161,7 +161,7 @@ const HomePage: React.FC = () => {
     const uuid = localStorage.getItem("uid");
     const token = localStorage.getItem("jwt");
     console.log("cartItemid", cartItemId);
-    const res = await fetch(`http://localhost:8090/cart/remove-item/${uuid}/${cartItemId}`, {
+    const res = await fetch(`http://localhost:8081/cart/remove-item/${uuid}/${cartItemId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -195,7 +195,7 @@ const HomePage: React.FC = () => {
   const handleUpdateQuantity = async (newQuantity: number, cartItemId: string) => {
     const uuid = localStorage.getItem("uid");
     const token = localStorage.getItem("jwt");
-    await fetch(`http://localhost:8090/cart/update-item/${uuid}/${cartItemId}/${newQuantity}`, {
+    await fetch(`http://localhost:8081/cart/update-item/${uuid}/${cartItemId}/${newQuantity}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
