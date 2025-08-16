@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaShoppingCart, FaCube, FaShoppingBag } from "react-icons/fa";
-import CartHoverList from "./Cart"; // Import the new component
+import { FaShoppingCart, FaCube, FaShoppingBag, FaUser } from "react-icons/fa";
+import CartHoverList from "./Cart";
+import UserProfileHoverList from "./UserProfileHOverList"; // Import the new component
 
 interface Product {
   inventoryId: string;
@@ -14,8 +15,23 @@ interface Product {
 }
 
 interface CartItem extends Product {
-  cartItemId: string,
+  cartItemId: string;
   selectedQuantity: number;
+}
+
+interface Password{
+  oldPassword:string,
+  newPassword:string
+}
+
+interface UserProfile {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: number;
+  role: string;
+  createdAt: string;
 }
 
 const HomePage: React.FC = () => {
@@ -23,7 +39,9 @@ const HomePage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [quantities, setQuantities] = useState<{ [key: string]: number }>({});
-  const [isHoveringCart, setIsHoveringCart] = useState(false); // New state for hover
+  const [isHoveringCart, setIsHoveringCart] = useState(false);
+  const [isHoveringUser, setIsHoveringUser] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const useremail = localStorage.getItem("useremail");
   const navigate = useNavigate();
 
@@ -31,7 +49,6 @@ const HomePage: React.FC = () => {
     const loginKey = localStorage.getItem("login");
     if (loginKey) {
       setIsLoggedIn(true);
-
     } else {
       navigate("/error", { replace: true });
     }
@@ -41,41 +58,50 @@ const HomePage: React.FC = () => {
     const fetchInventory = async () => {
       try {
         const token = localStorage.getItem("jwt");
-        if (!token) {
-          throw new Error("No JWT token found. Please log in again.");
-        }
-
-        const res = await fetch("http://localhost:8090/api/inventory", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+        if (!token) throw new Error("No JWT token found. Please log in again.");
+        const res = await fetch("http://localhost:8082/api/inventory", {
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         });
-
         if (!res.ok) throw new Error("Failed to fetch inventory");
         const json = await res.json();
-
         const fetchedProducts = Array.isArray(json.data) ? json.data : [];
         setProducts(fetchedProducts);
-
         const initialQuantities: { [key: string]: number } = {};
         fetchedProducts.forEach((prod: Product) => {
           initialQuantities[prod.inventoryId] = 1;
         });
         setQuantities(initialQuantities);
-
       } catch (err) {
         console.error("Error fetching inventory:", err);
       }
     };
-    fetchInventory();;
+    fetchInventory();
+  }, []);
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const token = localStorage.getItem("jwt");
+        const userEmail = localStorage.getItem("useremail");
+        if (!token || !userEmail) throw new Error("Authentication details not found.");
+        const res = await fetch(`http://localhost:8090/user/get-user-info?email=${userEmail}`, {
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error("Failed to fetch user details");
+        const json = await res.json();
+        setUserProfile(json.data);
+      } catch (err) {
+        console.error("Error fetching user details:", err);
+      }
+    };
+    fetchUserDetails();
   }, []);
 
   useEffect(() => {
     const fetchcartDetails = async () => {
       const uuid = localStorage.getItem("uid");
       const token = localStorage.getItem("jwt");
-      const res = await fetch(`http://localhost:8090/cart/get-cart/${uuid}`, {
+      const res = await fetch(`http://localhost:8081/cart/get-cart/${uuid}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -87,30 +113,75 @@ const HomePage: React.FC = () => {
       const json = await res.json();
       const fetchedcart = Array.isArray(json.data.orderItemList) ? json.data.orderItemList : [];
       const cartItems = fetchedcart.map((cartItem: any) => {
-        // Find the full product details from the product list
         const productDetails = products.find(p => p.inventoryId.match(cartItem.productId));
-        console.log(productDetails)
-        // If a matching product is found, create the new CartItem object
         if (productDetails) {
           return {
-            ...productDetails, // Copy all properties from the Product
-            selectedQuantity: cartItem.quantity, cartItemId: cartItem.id // Override with the selected quantity
+            ...productDetails,
+            selectedQuantity: cartItem.quantity,
+            cartItemId: cartItem.id,
           };
         }
-
-        // Handle cases where a product isn't found in the list (e.g., return null or an error)
         return null;
       }).filter(Boolean);
-      console.log(cartItems)
       setCart(cartItems);
-      console.log(json)
     };
-    fetchcartDetails();
+    if (products.length > 0) {
+      fetchcartDetails();
+    }
   }, [products]);
+function isPasswordUpdate(obj: any): obj is Password {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    typeof obj.oldPassword === 'string' &&
+    typeof obj.newPassword === 'string'
+  );
+}
+  const handleUpdateUser = async (field: string, value:  Password | string | number) => {
+    const token = localStorage.getItem("jwt");
+    const userEmail = localStorage.getItem("useremail");
+    if (!token || !userEmail) throw new Error("Authentication details missing.");
 
-  useEffect(() => {
+    let body;
+    let url;
 
-  }, [cart])
+    switch (field) {
+      case "firstName":
+        url = `http://localhost:8090/user/update-first-name/${userEmail}?fname=${value}`;
+        break;
+      case "lastName":
+        url = `http://localhost:8090/user/update-last-name/${userEmail}?lname=${value}`;
+        break;
+      case "password":
+        url = `http://localhost:8090/user/update-password`;
+        body = { 
+          email:userEmail,
+          oldPassword:  isPasswordUpdate(value)? value.oldPassword:"",
+          newPassword:isPasswordUpdate(value)?value.newPassword:"" };
+        break;
+      case "phone":
+        url = `http://localhost:8090/user/update-phone/${userEmail}?phone=${value}`;
+        break;
+      default:
+        throw new Error("Invalid field to update.");
+    }
+
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok){
+      const json = await res.json();
+      throw new Error(json.message)
+    };
+    const json = await res.json();
+    setUserProfile(json.data);
+  };
 
   const addToCart = async (product: Product) => {
     const qty = quantities[product.inventoryId] || 1;
@@ -125,7 +196,7 @@ const HomePage: React.FC = () => {
       price: product.price
     };
     const uuid = localStorage.getItem("uid")
-    const res = await fetch(`http://localhost:8090/cart/add-item/${uuid}`, {
+    const res = await fetch(`http://localhost:8081/cart/add-item/${uuid}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -137,31 +208,23 @@ const HomePage: React.FC = () => {
     const json = await res.json();
     const fetchedcart = Array.isArray(json.data.orderItemList) ? json.data.orderItemList : [];
     const cartItems = fetchedcart.map((cartItem: any) => {
-      // Find the full product details from the product list
       const productDetails = products.find(p => p.inventoryId.match(cartItem.productId));
-      console.log(productDetails)
-      // If a matching product is found, create the new CartItem object
       if (productDetails) {
         return {
-          ...productDetails, // Copy all properties from the Product
-          selectedQuantity: cartItem.quantity, // Override with the selected quantity
+          ...productDetails,
+          selectedQuantity: cartItem.quantity,
+          cartItemId: cartItem.id,
         };
       }
-
-      // Handle cases where a product isn't found in the list (e.g., return null or an error)
       return null;
     }).filter(Boolean);
-    console.log(cartItems)
     setCart(cartItems);
-    console.log(json)
   };
 
-  // New function to remove an item from the cart
   const handleRemoveItem = async (cartItemId: string) => {
     const uuid = localStorage.getItem("uid");
     const token = localStorage.getItem("jwt");
-    console.log("cartItemid", cartItemId);
-    const res = await fetch(`http://localhost:8090/cart/remove-item/${uuid}/${cartItemId}`, {
+    const res = await fetch(`http://localhost:8081/cart/remove-item/${uuid}/${cartItemId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -172,30 +235,23 @@ const HomePage: React.FC = () => {
     const json = await res.json();
     const fetchedcart = Array.isArray(json.data.orderItemList) ? json.data.orderItemList : [];
     const cartItems = fetchedcart.map((cartItem: any) => {
-      // Find the full product details from the product list
       const productDetails = products.find(p => p.inventoryId.match(cartItem.productId));
-      console.log(productDetails)
-      // If a matching product is found, create the new CartItem object
       if (productDetails) {
         return {
-          ...productDetails, // Copy all properties from the Product
-          selectedQuantity: cartItem.quantity, // Override with the selected quantity
+          ...productDetails,
+          selectedQuantity: cartItem.quantity,
+          cartItemId: cartItem.id,
         };
       }
-
-      // Handle cases where a product isn't found in the list (e.g., return null or an error)
       return null;
     }).filter(Boolean);
-    console.log(cartItems)
     setCart(cartItems);
-    console.log(json);
   };
 
-  // New function to update the quantity of a cart item
   const handleUpdateQuantity = async (newQuantity: number, cartItemId: string) => {
     const uuid = localStorage.getItem("uid");
     const token = localStorage.getItem("jwt");
-    await fetch(`http://localhost:8090/cart/update-item/${uuid}/${cartItemId}/${newQuantity}`, {
+    await fetch(`http://localhost:8081/cart/update-item/${uuid}/${cartItemId}/${newQuantity}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -204,13 +260,12 @@ const HomePage: React.FC = () => {
     });
     setCart((prevCart) =>
       prevCart.map((item) => {
-        if (item.cartItemId == cartItemId) {
+        if (item.cartItemId === cartItemId) {
           item.selectedQuantity = newQuantity;
         }
         return item;
       })
     );
-
   };
 
   const handleLogout = () => {
@@ -221,9 +276,8 @@ const HomePage: React.FC = () => {
   };
 
   const handleNavigateToCart = () => {
-    setIsHoveringCart(false); // Close the hover list when navigating
+    setIsHoveringCart(false);
   };
-
 
   if (isLoggedIn === null) {
     return null;
@@ -231,7 +285,6 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 font-sans text-gray-800">
-      {/* HEADER */}
       <header className="sticky top-0 z-50 bg-white shadow-md">
         <div className="container mx-auto p-4 flex justify-between items-center">
           <div className="flex items-center space-x-2">
@@ -241,10 +294,30 @@ const HomePage: React.FC = () => {
             </span>
           </div>
           <div className="flex items-center space-x-6">
-            <p className="text-lg font-medium text-gray-700">
-              Welcome,{" "}
-              <span className="text-blue-600 font-semibold">{useremail}</span>
-            </p>
+            <div
+              className="relative"
+              onMouseEnter={() => setTimeout(() => {
+                  setIsHoveringUser(true);
+                }, 300)
+}
+              onMouseLeave={() => setTimeout(() => {
+                  setIsHoveringUser(false);
+                }, 300)
+}
+            >
+              <div className="cursor-pointer flex items-center gap-2 text-lg font-medium text-gray-700 hover:text-blue-600 transition-colors">
+                <FaUser size={18} />
+                <span className="text-blue-600 font-semibold">{useremail}</span>
+              </div>
+              {isHoveringUser && userProfile && (
+                <UserProfileHoverList
+                  user={userProfile}
+                  onUpdateUser={handleUpdateUser}
+                  onClose={() => setIsHoveringUser(false)}
+                />
+              )}
+            </div>
+
             <button
               onClick={handleLogout}
               className="px-4 py-2 text-sm font-medium text-red-600 border border-red-600 rounded-lg hover:bg-red-50 hover:text-red-700 transition-colors duration-200"
@@ -252,7 +325,6 @@ const HomePage: React.FC = () => {
               Logout
             </button>
 
-            {/* My Orders Button */}
             <button
               onClick={() => navigate("/my-orders")}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors duration-200"
@@ -261,19 +333,16 @@ const HomePage: React.FC = () => {
               My Orders
             </button>
 
-            {/* Cart Icon with Hover List */}
             <div
               className="relative"
-              onMouseEnter={() =>
-                setTimeout(() => {
+              onMouseEnter={() => setTimeout(() => {
                   setIsHoveringCart(true);
                 }, 300)
-              }
-              onMouseLeave={() =>
-                setTimeout(() => {
+}
+              onMouseLeave={() => setTimeout(() => {
                   setIsHoveringCart(false);
                 }, 300)
-              }
+}
             >
               <div className="cursor-pointer">
                 <FaShoppingCart
@@ -295,13 +364,10 @@ const HomePage: React.FC = () => {
                 />
               )}
             </div>
-            
           </div>
         </div>
       </header>
 
-
-      {/* MAIN */}
       <main className="container mx-auto p-4 md:p-8">
         {products.length === 0 ? (
           <div className="flex items-center justify-center h-64">
@@ -324,7 +390,6 @@ const HomePage: React.FC = () => {
                   <p className="text-lg font-bold text-green-600 mb-4">
                     ₹{product.price}
                   </p>
-
                   <label className="text-sm font-medium text-gray-700">
                     Quantity: {quantities[product.inventoryId] || 1}
                   </label>
@@ -341,7 +406,6 @@ const HomePage: React.FC = () => {
                     }
                     className="w-full my-2"
                   />
-
                   <button
                     className="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200"
                     onClick={() => addToCart(product)}
