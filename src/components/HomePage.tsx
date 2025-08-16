@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaShoppingCart, FaCube, FaShoppingBag, FaUser } from "react-icons/fa";
 import CartHoverList from "./Cart";
-import UserProfileHoverList from "./UserProfileHOverList"; // Import the new component
+import UserProfileHoverList from "./UserProfileHoverList"; // Import the new component
 
 interface Product {
   inventoryId: string;
