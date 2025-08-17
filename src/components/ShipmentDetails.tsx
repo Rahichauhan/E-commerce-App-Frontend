@@ -35,47 +35,25 @@ export default function ShipmentDetails({ isAdmin }: ShipmentDetailsProps) {
   const [selectedStatus, setSelectedStatus] = useState<string>('PENDING');
 
   const handleFetch = async () => {
-    try {
-      const res = await fetchShipmentById(shipmentId);
-      if (res.data) {
-        setShipment(res.data as Shipment);
-        setSelectedStatus(res.data.shipmentStatus); // set current status in dropdown
-      } else {
-        setShipment(null);
-        alert('Shipment not found');
-      }
-    } catch (error) {
-      alert('Shipment not found');
-      setShipment(null);
-    }
+    const res = await fetchShipmentById(shipmentId);
+    setShipment(res.data);
+    setSelectedStatus(res.data?.shipmentStatus ?? 'PENDING');
   };
 
   const handleStatusUpdate = async () => {
-    try {
-      await updateShipmentStatus(shipmentId, selectedStatus);
-      await handleFetch();
-    } catch {
-      alert('Error updating status');
-    }
+    await updateShipmentStatus(shipmentId, selectedStatus);
+    await handleFetch();
   };
 
   const handleCancel = async () => {
     if (!shipment) return;
-    try {
-      await cancelShipment(shipment.orderId);
-      await handleFetch();
-    } catch {
-      alert('Error cancelling shipment');
-    }
+    await cancelShipment(shipment.orderId);
+    await handleFetch();
   };
 
   const handleDelete = async () => {
-    try {
-      await deleteShipment(shipmentId);
-      setShipment(null);
-    } catch {
-      alert('Error deleting shipment');
-    }
+    await deleteShipment(shipmentId);
+    setShipment(null);
   };
 
   return (

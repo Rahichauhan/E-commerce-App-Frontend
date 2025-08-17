@@ -30,13 +30,20 @@ export default function PlaceOrderPage() {
     }
   }, [cartItems, navigate]);
 
-  const totalAmount = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const totalAmount = cartItems.reduce((sum, item) => {
+    const price = Number(item.price);
+    const quantity = Number(item.quantity);
+
+    if (isNaN(price) || isNaN(quantity)) return sum;
+
+    return sum + price * quantity;
+  }, 0);
 
   const handlePlaceOrder = async () => {
     setError(null);
     setSuccessMessage(null);
 
-    const customerId = localStorage.getItem("customerId");
+    const customerId = localStorage.getItem("uid");
     if (!customerId) {
       setError("User not logged in.");
       return;
@@ -80,12 +87,17 @@ export default function PlaceOrderPage() {
 
       <h3 className="text-lg font-semibold text-gray-700 mb-2">Cart Summary</h3>
       <ul className="divide-y divide-gray-200 mb-4">
-        {cartItems.map((item) => (
-          <li key={item.inventoryId} className="py-2 flex justify-between text-gray-700">
-            <span>{item.productName} (x{item.quantity})</span>
-            <span>₹{(item.price * item.quantity).toFixed(2)}</span>
-          </li>
-        ))}
+        {cartItems.map((item) => {
+          const price = Number(item.price);
+          const quantity = Number(item.quantity);
+          const itemTotal = (!isNaN(price) && !isNaN(quantity)) ? (price * quantity).toFixed(2) : "0.00";
+          return (
+            <li key={item.inventoryId} className="py-2 flex justify-between text-gray-700">
+              <span>{item.productName} (x{!isNaN(quantity) ? quantity : 0})</span>
+              <span>₹{itemTotal}</span>
+            </li>
+          );
+        })}
       </ul>
       <p className="text-lg font-semibold text-gray-800 mb-4">
         Total: ₹{totalAmount.toFixed(2)}
@@ -93,9 +105,7 @@ export default function PlaceOrderPage() {
 
       {/* Payment Mode */}
       <div className="mb-4">
-        <label className="block text-gray-700 font-medium mb-1">
-          Payment Mode:
-        </label>
+        <label className="block text-gray-700 font-medium mb-1">Payment Mode:</label>
         <select
           value={paymentMode}
           onChange={(e) => setPaymentMode(e.target.value as PaymentMode)}
@@ -109,9 +119,7 @@ export default function PlaceOrderPage() {
 
       {/* Address */}
       <div className="mb-4">
-        <label className="block text-gray-700 font-medium mb-1">
-          Shipping Address:
-        </label>
+        <label className="block text-gray-700 font-medium mb-1">Shipping Address:</label>
         <textarea
           rows={3}
           value={address}
@@ -134,7 +142,6 @@ export default function PlaceOrderPage() {
           </button>
         </div>
       )}
-
 
       {/* Place Order Button */}
       <button

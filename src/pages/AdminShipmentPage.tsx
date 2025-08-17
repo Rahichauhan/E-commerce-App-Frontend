@@ -6,23 +6,17 @@ import type { ShipmentDTO } from '../types/shipment';
 export default function AdminShipmentPage() {
   const [shipments, setShipments] = useState<ShipmentDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
-
   const navigate = useNavigate();
 
   useEffect(() => {
     const loadShipments = async () => {
-      try {
-        const res = await fetchShipments();
-        if (res.data) {
-          setShipments(res.data);
-        } else {
-          setError(res.message || 'No shipment data found');
-        }
-      } catch (err) {
-        setError('Failed to fetch shipment data');
+      const res = await fetchShipments();
+      if (res.data) {
+        setShipments(res.data);
+      } else {
+        setError(res.message || 'No shipment data found');
       }
     };
-
     loadShipments();
   }, []);
 
