@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "../layouts/AdminLayout"; 
+import { useNavigate } from "react-router-dom";
 
 interface Product {
   inventoryId: string;
@@ -13,6 +14,8 @@ const AdminInventoryPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [form, setForm] = useState<Partial<Product>>({});
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+   const navigate = useNavigate();
 
   // Helper: Always attach JWT token
   const apiFetch = async (url: string, options: RequestInit = {}) => {
@@ -26,6 +29,19 @@ const AdminInventoryPage: React.FC = () => {
       },
     });
   };
+    useEffect(() => {
+    const loginKey = localStorage.getItem("login");
+    const userType = localStorage.getItem("userType");
+    if (loginKey && userType == "ADMIN") {
+      setIsLoggedIn(true);
+    } else {
+      navigate("/error", {
+        replace: true,
+        state: { message: "Please log in as Admin to access this page." }
+      });
+
+    }
+  }, [navigate]);
 
   // Fetch inventory
   const fetchInventory = async () => {
@@ -96,6 +112,9 @@ const AdminInventoryPage: React.FC = () => {
     setIsEditing(true);
   };
 
+  if (isLoggedIn === null) {
+    return null;
+  }
   return (
     <AdminLayout>
       <div className="p-8">
