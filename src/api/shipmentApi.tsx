@@ -10,12 +10,35 @@ const getAuthHeader = () => {
     "Content-Type": "application/json",
   };
 };
-
 export async function fetchShipments(): Promise<ResponseDTO<ShipmentDTO[]>> {
   const res = await fetch(`${BASE_URL}/fetchAllShipment`, {
     headers: getAuthHeader(),
   });
-  return res.json();
+
+  const now = new Date().toISOString();
+
+  // Error fallback for failed fetch
+  if (!res.ok) {
+    return {
+      data: [],
+      message: `Error: ${res.status} ${res.statusText}`,
+      status: res.status,
+      timestamp: now,
+    };
+  }
+
+  const text = await res.text();
+  if (!text) {
+    return {
+      data: [],
+      message: "Empty response from server",
+      status: res.status,
+      timestamp: now,
+    };
+  }
+
+  // If successful, return parsed JSON
+  return JSON.parse(text);
 }
 
 export async function fetchShipmentById(id: string): Promise<ResponseDTO<ShipmentDTO>> {
