@@ -70,7 +70,7 @@ export default function PlaceOrderPage() {
     setLoading(true);
     try {
       const response: ResponseDTO<OrderResponseDTO> = await placeOrder(orderRequest);
-      if ((response.status === HttpStatusCode.Ok || response.status === HttpStatusCode.Created) && response.data) {
+      if ((response.status.toString() == "OK" || response.status.toString() == "CREATED" ) && response.data) {
         setSuccessMessage(`Order placed successfully! Order ID: ${response.data.orderId}`);
       } else {
         setError(response.message || "Failed to place order");

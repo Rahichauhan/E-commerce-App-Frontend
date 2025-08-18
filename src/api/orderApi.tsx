@@ -42,7 +42,7 @@ export async function cancelOrder(
     method: 'PUT',
     headers: getAuthHeader(),
   });
-  return res.json();
+  return await res.json();
 }
 
 // ✅ Get all orders (admin only)

@@ -37,7 +37,7 @@ export default function OrderListPage() {
   const handleCancel = async (id: string) => {
     try {
       const response = await cancelOrder(id);
-      if (response.status === 200) {
+      if (response.status.toString() == "OK") {
         setCancelMessages(prev => ({ ...prev, [id]: '✅ Order cancelled successfully' }));
         if (customerId) fetchOrders(customerId);
         setSelectedOrder(null);
