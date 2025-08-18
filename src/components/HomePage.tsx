@@ -43,17 +43,17 @@ const HomePage: React.FC = () => {
   const [isHoveringUser, setIsHoveringUser] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [availableCart, setAvailableCart] = useState(false);
-  const useremail = localStorage.getItem("useremail");
   const navigate = useNavigate();
 
   useEffect(() => {
     const loginKey = localStorage.getItem("login");
-    if (loginKey) {
+    const userType = localStorage.getItem("userType");
+    if (loginKey && userType == "USER") {
       setIsLoggedIn(true);
     } else {
       navigate("/error", {
         replace: true,
-        state: { message: "Please log in to access this page." }
+        state: { message: "Please log in as user to access this page." }
       });
 
     }

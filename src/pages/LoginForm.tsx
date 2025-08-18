@@ -1,4 +1,4 @@
-import { useState, type SetStateAction } from "react";
+import { useEffect, useState, type SetStateAction } from "react";
 import { useNavigate } from "react-router-dom";
 type MyProps = {
         setSuccessMessage: (value:SetStateAction<string>)=> void;
@@ -44,18 +44,26 @@ const LoginForm: React.FC<MyProps> = ({setSuccessMessage,setErrorMessage}) => {
 
       if(response2.ok){
         const mydata = await response2.json();
-        localStorage.setItem("uid",mydata.data.id)
+        localStorage.setItem("uid",mydata.data.id);
+        localStorage.setItem("userType",mydata.data.role);
         console.log(mydata.data)
       }else{
         console.log(await response2.json());
       }
 
-        //
         console.log('Server Response:', data);
         if (data.data) {
           console.log('JWT Token received:', data.data);
         }
-        navigate("/home", { replace: true });
+        const userType = localStorage.getItem("userType");
+        if(userType == "USER"){
+          navigate("/home", { replace: true });
+        }else if(userType == "ADMIN"){
+          navigate("/admin-dashboard", { replace: true })
+        }else{
+          navigate("/error", { replace: true,state:"You are not authorized"
+           })
+        }
       } else {
         const errorData = await response.json();
         setErrorMessage(errorData.message || 'An error occurred.');
@@ -68,6 +76,20 @@ const LoginForm: React.FC<MyProps> = ({setSuccessMessage,setErrorMessage}) => {
       setIsLoading(false);
     }
   };
+
+ useEffect(() => {
+    const loginKey = localStorage.getItem("login");
+    const userType = localStorage.getItem("userType");
+    if (loginKey && userType == "USER") {
+      navigate("/home", {
+        replace: true,
+      });
+    } else if(loginKey && userType == "ADMIN"){
+       navigate("/admin-dashboard", {
+        replace: true,
+      });
+    }
+  }, [navigate]);
 
     const onSubmit = (e:any) => {
       e.preventDefault();

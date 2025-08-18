@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { getOrdersByCustomerId, cancelOrder } from '../api/orderApi';
 import type { OrderResponseDTO } from '../types/order';
 import OrderDetails from '../components/OrderDetails';
+import { HttpStatusCode } from 'axios';
 
 export default function OrderListPage() {
   const [orders, setOrders] = useState<OrderResponseDTO[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<OrderResponseDTO | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [cancelMessage, setCancelMessage] = useState<string | null>(null);
+  const [cancelMessages, setCancelMessages] = useState<Record<string, string>>({});
 
   const customerId = localStorage.getItem('uid');
 
@@ -36,15 +37,15 @@ export default function OrderListPage() {
   const handleCancel = async (id: string) => {
     try {
       const response = await cancelOrder(id);
-      if (response.status === 200) {
-        setCancelMessage('Order cancelled successfully');
+      if (response.status.toString() == "OK") {
+        setCancelMessages(prev => ({ ...prev, [id]: '✅ Order cancelled successfully' }));
         if (customerId) fetchOrders(customerId);
         setSelectedOrder(null);
       } else {
-        setCancelMessage('Failed to cancel order');
+        setCancelMessages(prev => ({ ...prev, [id]: '❌ Failed to cancel order' }));
       }
     } catch {
-      setCancelMessage('Error cancelling order');
+      setCancelMessages(prev => ({ ...prev, [id]: '⚠️ Error cancelling order' }));
     }
   };
 
@@ -53,12 +54,11 @@ export default function OrderListPage() {
       <h2 className="text-2xl font-bold mb-4">Your Orders</h2>
 
       {error && <p className="text-red-500 mb-3">{error}</p>}
-      
 
       <ul className="space-y-4">
         {orders.map(order => (
           <li
-            key={order.orderId}
+            key={order.id}
             className="bg-white shadow rounded-lg p-4 border border-gray-200"
           >
             <div className="flex justify-between items-center">
@@ -66,39 +66,47 @@ export default function OrderListPage() {
                 <p className="font-semibold">Order {order.id}</p>
                 <p className="text-gray-500">Status: {order.orderStatus}</p>
               </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() =>
-                    setSelectedOrder(
-                      selectedOrder?.orderId === order.orderId ? null : order
-                    )
-                  }
-                  className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  {selectedOrder?.id === order.id
-                    ? 'Hide Details'
-                    : 'View Details'}
-                </button>
 
-                {selectedOrder?.id === order.id && (
-                  <div className="mt-4 border-t pt-4">
-                    <OrderDetails order={selectedOrder} />
-                  </div>
-                )}
-                
-                {order.orderStatus !== 'CANCELLED' && (
+              <div className="flex flex-col space-y-2">
+                <div className="flex space-x-2">
                   <button
-                    onClick={() => handleCancel(order.id)}
-                    className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                    onClick={() =>
+                      setSelectedOrder(selectedOrder?.id === order.id ? null : order)
+                    }
+                    className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                   >
-                    Cancel Order
+                    {selectedOrder?.id === order.id ? 'Hide Details' : 'View Details'}
                   </button>
-                )}
 
-                {cancelMessage && <p className="text-green-600 mb-3">{cancelMessage}</p>}
+                  {order.orderStatus !== 'CANCELLED' && (
+                    <button
+                      onClick={() => handleCancel(order.id)}
+                      className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700"
+                    >
+                      Cancel Order
+                    </button>
+                  )}
+                </div>
+
+                {cancelMessages[order.id] && (
+                  <p
+                    className={`text-sm ${
+                      cancelMessages[order.id].includes('successfully')
+                        ? 'text-green-600'
+                        : 'text-red-600'
+                    }`}
+                  >
+                    {cancelMessages[order.id]}
+                  </p>
+                )}
               </div>
             </div>
 
+            {selectedOrder?.id === order.id && (
+              <div className="mt-4 border-t pt-4">
+                <OrderDetails order={selectedOrder} />
+              </div>
+            )}
           </li>
         ))}
       </ul>

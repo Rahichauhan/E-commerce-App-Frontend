@@ -1,20 +1,109 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaBars, FaCube } from "react-icons/fa";
+import { FaBars, FaCube, FaUser } from "react-icons/fa";
+import UserProfileHoverList from "../components/UserProfileHoverList";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
+}
+interface UserProfile {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: number;
+  role: string;
+  createdAt: string;
+}
+interface Password {
+  oldPassword: string,
+  newPassword: string
 }
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
 
+    const [isHoveringUser, setIsHoveringUser] = useState(false);
+    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+
   const handleLogout = () => {
     localStorage.removeItem("login");
     localStorage.removeItem("useremail");
     localStorage.removeItem("jwt");
     navigate("/");
+  };
+    useEffect(() => {
+      const fetchUserDetails = async () => {
+        try {
+          const token = localStorage.getItem("jwt");
+          const userEmail = localStorage.getItem("useremail");
+          if (!token || !userEmail) throw new Error("Authentication details not found.");
+          const res = await fetch(`http://localhost:8090/user/get-user-info?email=${userEmail}`, {
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          });
+          if (!res.ok) throw new Error("Failed to fetch user details");
+          const json = await res.json();
+          setUserProfile(json.data);
+        } catch (err) {
+          console.error("Error fetching user details:", err);
+        }
+      };
+      fetchUserDetails();
+    }, []);
+   function isPasswordUpdate(obj: any): obj is Password {
+    return (
+      typeof obj === 'object' &&
+      obj !== null &&
+      typeof obj.oldPassword === 'string' &&
+      typeof obj.newPassword === 'string'
+    );
+  }
+    const handleUpdateUser = async (field: string, value: Password | string | number) => {
+    const token = localStorage.getItem("jwt");
+    const userEmail = localStorage.getItem("useremail");
+    if (!token || !userEmail) throw new Error("Authentication details missing.");
+
+    let body;
+    let url;
+
+    switch (field) {
+      case "firstName":
+        url = `http://localhost:8090/user/update-first-name/${userEmail}?fname=${value}`;
+        break;
+      case "lastName":
+        url = `http://localhost:8090/user/update-last-name/${userEmail}?lname=${value}`;
+        break;
+      case "password":
+        url = `http://localhost:8090/user/update-password`;
+        body = {
+          email: userEmail,
+          oldPassword: isPasswordUpdate(value) ? value.oldPassword : "",
+          newPassword: isPasswordUpdate(value) ? value.newPassword : ""
+        };
+        break;
+      case "phone":
+        url = `http://localhost:8090/user/update-phone/${userEmail}?phone=${value}`;
+        break;
+      default:
+        throw new Error("Invalid field to update.");
+    }
+
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      const json = await res.json();
+      throw new Error(json.message)
+    };
+    const json = await res.json();
+    setUserProfile(json.data);
   };
 
   return (
@@ -40,14 +129,37 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               </span>
             </div>
           </div>
-
-          {/* Right: Logout */}
+              <div className="flex items-right space-x-2 justify-between items-center">
+                <div
+                className="relative"
+                onMouseEnter={() => setTimeout(() => {
+                  setIsHoveringUser(true);
+                }, 300)
+                }
+                onMouseLeave={() => setTimeout(() => {
+                  setIsHoveringUser(false);
+                }, 300)
+                }
+              >
+                <FaUser size={21}
+                className="text-gray-600 hover:text-blue-600 transition-colors"
+                 />
+                {isHoveringUser && userProfile && (
+                  <UserProfileHoverList
+                    user={userProfile}
+                    onUpdateUser={handleUpdateUser}
+                    onClose={() => setIsHoveringUser(false)}
+                  />
+                )}
+              </div>
           <button
             onClick={handleLogout}
             className="px-4 py-2 text-sm font-medium text-red-600 border border-red-600 rounded-lg hover:bg-red-50 hover:text-red-700 transition-colors duration-200"
           >
             Logout
           </button>
+              </div>
+          
         </div>
       </header>
 

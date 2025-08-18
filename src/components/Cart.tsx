@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { FaTrash, FaPlus, FaMinus, FaExclamationCircle } from "react-icons/fa";
