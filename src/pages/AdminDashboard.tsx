@@ -1,7 +1,23 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AdminLayout from "../layouts/AdminLayout";
+import { useEffect } from "react";
 
 export default function AdminDashboard() {
+
+   const navigate = useNavigate();
+    useEffect(() => {
+        const loginKey = localStorage.getItem("login");
+        const userType = localStorage.getItem("userType");
+        if (loginKey && userType == "ADMIN") {
+          // do nothing
+        } else {
+          navigate("/error", {
+            replace: true,
+            state: { message: "Please log in as Admin to access this page." }
+          });
+    
+        }
+      }, [navigate]);
 
     return (
         <AdminLayout>
