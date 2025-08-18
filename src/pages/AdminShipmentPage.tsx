@@ -9,6 +9,20 @@ export default function AdminShipmentPage() {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
+    useEffect(() => {
+        const loginKey = localStorage.getItem("login");
+        const userType = localStorage.getItem("userType");
+        if (loginKey && userType == "ADMIN") {
+          //do nothing
+        } else {
+          navigate("/error", {
+            replace: true,
+            state: { message: "Please log in as Admin to access this page." }
+          });
+    
+        }
+      }, [navigate]);
+
   useEffect(() => {
     const loadShipments = async () => {
       const res = await fetchShipments();

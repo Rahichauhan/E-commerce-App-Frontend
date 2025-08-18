@@ -7,6 +7,7 @@ import {
 import type { OrderResponseDTO } from '../types/order';
 import OrderDetails from '../components/OrderDetails';
 import AdminLayout from '../layouts/AdminLayout';
+import { useNavigate } from 'react-router-dom';
 
 export default function AdminOrderManagementPage() {
   const [orders, setOrders] = useState<OrderResponseDTO[]>([]);
@@ -14,10 +15,25 @@ export default function AdminOrderManagementPage() {
   const [customerId, setCustomerId] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+   const navigate = useNavigate();
 
   useEffect(() => {
     fetchAllOrders();
   }, []);
+
+   useEffect(() => {
+    const loginKey = localStorage.getItem("login");
+    const userType = localStorage.getItem("userType");
+    if (loginKey && userType == "ADMIN") {
+
+    } else {
+      navigate("/error", {
+        replace: true,
+        state: { message: "Please log in as Admin to access this page." }
+      });
+
+    }
+  }, [navigate]);
 
   const fetchAllOrders = async () => {
     setLoading(true);
