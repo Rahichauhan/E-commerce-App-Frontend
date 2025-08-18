@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import type { OrderRequestDTO, ResponseDTO, OrderResponseDTO } from "../types/order";
 import { placeOrder } from "../api/orderApi";
+import { HttpStatusCode } from "axios";
 
 interface CartItem {
   inventoryId: string;
@@ -69,7 +70,7 @@ export default function PlaceOrderPage() {
     setLoading(true);
     try {
       const response: ResponseDTO<OrderResponseDTO> = await placeOrder(orderRequest);
-      if ((response.status === 200 || response.status === 201) && response.data) {
+      if ((response.status === HttpStatusCode.Ok || response.status === HttpStatusCode.Created) && response.data) {
         setSuccessMessage(`Order placed successfully! Order ID: ${response.data.orderId}`);
       } else {
         setError(response.message || "Failed to place order");

@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { FaTrash, FaPlus, FaMinus, FaExclamationCircle } from "react-icons/fa";
@@ -35,10 +34,16 @@ const CartHoverList: React.FC<CartHoverListProps> = ({
 }) => {
   const navigate = useNavigate();
 
-  const handleProceedToCart = () => {
-    onNavigateToCart();
-    navigate("/place-order", { state: { cart } });
-  };
+const handleProceedToCart = () => {
+  const simplifiedCart = cart.map(item => ({
+    inventoryId: item.inventoryId,
+    productName: item.productName,
+    quantity: item.selectedQuantity,
+    price: item.price,
+  }));
+  onNavigateToCart();
+  navigate("/place-order", { state: { cart: simplifiedCart } });
+};
 
   const calculateTotal = () => {
     return cart.reduce(

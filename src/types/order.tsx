@@ -1,3 +1,5 @@
+import type { HttpStatusCode } from "axios";
+
 export interface OrderItemResponseDTO {
   inventoryId: string;
   productName: string;
@@ -32,6 +34,6 @@ export interface OrderRequestDTO {
 export interface ResponseDTO<T> {
   message: string;
   data: T | null;
-  status: number;
+  status: HttpStatusCode;
   timestamp: string;
 }
