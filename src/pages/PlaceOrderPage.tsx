@@ -93,7 +93,7 @@ export default function PlaceOrderPage() {
           const itemTotal = (!isNaN(price) && !isNaN(quantity)) ? (price * quantity).toFixed(2) : "0.00";
           return (
             <li key={item.inventoryId} className="py-2 flex justify-between text-gray-700">
-              <span>{item.productName} (x{!isNaN(quantity) ? quantity : 0})</span>
+              <span>{item.productName} ({!isNaN(quantity) ? quantity : 0})</span>
               <span>₹{itemTotal}</span>
             </li>
           );
