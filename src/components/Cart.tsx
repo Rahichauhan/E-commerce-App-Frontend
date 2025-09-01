@@ -36,6 +36,7 @@ const CartHoverList: React.FC<CartHoverListProps> = ({
 
 const handleProceedToCart = () => {
   const simplifiedCart = cart.map(item => ({
+    cartItemId: item.cartItemId,
     inventoryId: item.inventoryId,
     productName: item.productName,
     quantity: item.selectedQuantity,

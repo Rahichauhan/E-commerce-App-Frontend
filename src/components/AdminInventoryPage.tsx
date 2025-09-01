@@ -29,6 +29,9 @@ const AdminInventoryPage: React.FC = () => {
       },
     });
   };
+
+  
+  // check user login
     useEffect(() => {
     const loginKey = localStorage.getItem("login");
     const userType = localStorage.getItem("userType");
@@ -83,7 +86,6 @@ const AdminInventoryPage: React.FC = () => {
       });
 
       if (!res.ok) throw new Error("Failed to save product");
-
       setForm({});
       setIsEditing(false);
       fetchInventory();

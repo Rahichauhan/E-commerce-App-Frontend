@@ -5,6 +5,7 @@ import { placeOrder } from "../api/orderApi";
 import { HttpStatusCode } from "axios";
 
 interface CartItem {
+  cartItemId:string;
   inventoryId: string;
   productName: string;
   quantity: number;
