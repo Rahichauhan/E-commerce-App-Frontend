@@ -53,6 +53,28 @@ const HomePage: React.FC = () => {
   const stompClient = useRef<CompatClient | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  const RefreshToken = async ()=>{
+    console.log("Refreshing token");
+    const refreshToken = localStorage.getItem("refreshToken");
+    const userEmail = localStorage.getItem("useremail")
+          const requestBody = {
+            email:userEmail,
+            token:refreshToken
+          }
+         const res =  await fetch(`http://localhost:8090/access/verify-token`, {
+          headers: { "Content-Type": "application/json" },
+       method:"POST",
+          body:JSON.stringify(requestBody)
+        });
+        const json = await res.json();
+        console.log(json);
+      if(res.ok){
+        localStorage.setItem("jwt",json.data)
+        console.log("Please refresh the page");
+      }else{
+        console.log(json,requestBody)
+      }
+  }
 
 
   useEffect(() => {
@@ -112,7 +134,7 @@ const HomePage: React.FC = () => {
         const res = await fetch("http://localhost:8082/api/inventory", {
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new Error("Failed to fetch inventory");
+        if(!res.ok) throw new Error("Failed to fetch inventory");
         const json = await res.json();
         const fetchedProducts = Array.isArray(json.data) ? json.data : [];
         setProducts(fetchedProducts);
@@ -137,10 +159,17 @@ const HomePage: React.FC = () => {
         const res = await fetch(`http://localhost:8090/user/get-user-info?email=${userEmail}`, {
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new Error("Failed to fetch user details");
-        const json = await res.json();
-        setUserProfile(json.data);
+        if (res.ok) {
+            const json = await res.json();
+          setUserProfile(json.data);
+        }
+        else{
+          console.log("Refresh token to be called")
+          RefreshToken();
+        }
+      
       } catch (err) {
+
         console.error("Error fetching user details:", err);
       }
     };
