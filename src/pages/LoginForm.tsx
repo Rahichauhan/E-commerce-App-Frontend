@@ -39,7 +39,7 @@ const LoginForm: React.FC<MyProps> = ({setSuccessMessage,setErrorMessage}) => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${data.data}`,
+          Authorization: `Bearer ${data.data.jwtToken}`,
         }
       });
 

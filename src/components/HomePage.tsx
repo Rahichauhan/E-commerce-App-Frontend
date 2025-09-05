@@ -53,6 +53,13 @@ const HomePage: React.FC = () => {
   const stompClient = useRef<CompatClient | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  const reloadPage = () => {
+    setTimeout(() => {
+  window.location.reload();
+}, 2000);
+    
+  };
+
   const RefreshToken = async ()=>{
     console.log("Refreshing token");
     const refreshToken = localStorage.getItem("refreshToken");
@@ -70,9 +77,15 @@ const HomePage: React.FC = () => {
         console.log(json);
       if(res.ok){
         localStorage.setItem("jwt",json.data)
-        console.log("Please refresh the page");
+        console.log("Reloading in 2 sec");
+        reloadPage();
       }else{
-        console.log(json,requestBody)
+        console.log(json,requestBody);
+        localStorage.clear();
+        navigate("/error", {
+        replace: true,
+        state: { message: "Please log in as user to access this page." }
+      });
       }
   }
 
@@ -166,6 +179,7 @@ const HomePage: React.FC = () => {
         else{
           console.log("Refresh token to be called")
           RefreshToken();
+          
         }
       
       } catch (err) {
