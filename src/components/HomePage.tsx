@@ -6,7 +6,6 @@ import CartHoverList from "./Cart";
 import UserProfileHoverList from "./UserProfileHoverList"; // Import the new component
 import { CompatClient, Stomp } from "@stomp/stompjs";
 import NotificationToast from "./NotificationToast";
-import { FaBell } from "react-icons/fa";
 
 
 interface Product {
@@ -49,7 +48,7 @@ const HomePage: React.FC = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [availableCart, setAvailableCart] = useState(false);
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<string[]>([]);
+  // const [messages, setMessages] = useState<string[]>([]);
   const stompClient = useRef<CompatClient | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -102,7 +101,8 @@ const HomePage: React.FC = () => {
         console.log('Connected: ' + frame);
         client.subscribe('/topic/messages', (message) => {
           const mbody = JSON.parse(message.body);
-          setMessages((prev) => [...prev, mbody.context]);
+          // setMessages((prev) => [...prev, mbody.context]);
+          console.log(mbody);
           setToastMessage(mbody.context);
           // Auto-hide the toast after 4 seconds
           setTimeout(() => setToastMessage(null), 4000);
@@ -110,7 +110,8 @@ const HomePage: React.FC = () => {
 
         client.subscribe('/topic/errors', (message) => {
           const mbody = JSON.parse(message.body);
-          setMessages((prev) => [...prev, mbody.context]);
+          // setMessages((prev) => [...prev, mbody.context]);
+          console.log(mbody);
           setToastMessage(mbody.context);
           setTimeout(() => setToastMessage(null), 4000);
         }, { Authorization: `Bearer ${token}` });
