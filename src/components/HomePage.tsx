@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaShoppingCart, FaCube, FaShoppingBag, FaUser } from "react-icons/fa";
+import { FaShoppingCart, FaCube, FaShoppingBag, FaUser,FaSearch } from "react-icons/fa";
 import SockJS from 'sockjs-client';
 import CartHoverList from "./Cart";
 import UserProfileHoverList from "./UserProfileHoverList"; // Import the new component
@@ -51,6 +51,12 @@ const HomePage: React.FC = () => {
   // const [messages, setMessages] = useState<string[]>([]);
   const stompClient = useRef<CompatClient | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+   const [searchTerm, setSearchTerm] = useState<string>(""); // 🔍 new state
+  const filteredProducts = products.filter((product) =>
+    product.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.productDesc.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const reloadPage = () => {
     setTimeout(() => {
@@ -473,15 +479,27 @@ const HomePage: React.FC = () => {
         </div>
       </header>
 
+      
+
       <main className="container mx-auto p-4 md:p-8">
         {toastMessage && <NotificationToast message={toastMessage} />}
-        {products.length === 0 ? (
+        <div className="flex items-center mb-6 w-full md:w-1/2 lg:w-1/3 bg-white rounded-lg shadow-md px-3 py-2">
+          <FaSearch className="text-gray-500 mr-2" />
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full outline-none text-gray-700"
+          />
+        </div>
+        {filteredProducts.length === 0 ? (
           <div className="flex items-center justify-center h-64">
             <p className="text-xl text-gray-500">No products available</p>
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {products.map((product) => (
+            {filteredProducts.map((product) => (
               <div
                 key={product.inventoryId}
                 className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden"
