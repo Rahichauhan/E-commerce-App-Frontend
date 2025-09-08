@@ -4,7 +4,6 @@ const Logout = ()=>{
     const handleLogout = ()=>{
         localStorage.clear();
         navigate("/");
-
     }
     return <>
     <button onClick={handleLogout}>Click here to logout</button>

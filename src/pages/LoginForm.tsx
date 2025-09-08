@@ -32,13 +32,14 @@ const LoginForm: React.FC<MyProps> = ({setSuccessMessage,setErrorMessage}) => {
 
         //
         localStorage.setItem("login","true");
-        localStorage.setItem("jwt",data.data);
+        localStorage.setItem("jwt",data.data.jwtToken);
+        localStorage.setItem("refreshToken",data.data.refreshToken);
         localStorage.setItem("useremail",email);
         const response2 = await fetch(new URL(`http://localhost:8090/user/get-user-info?email=${email}`), {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${data.data}`,
+          Authorization: `Bearer ${data.data.jwtToken}`,
         }
       });
 

@@ -1,8 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaShoppingCart, FaCube, FaShoppingBag, FaUser } from "react-icons/fa";
+import SockJS from 'sockjs-client';
 import CartHoverList from "./Cart";
 import UserProfileHoverList from "./UserProfileHoverList"; // Import the new component
+import { CompatClient, Stomp } from "@stomp/stompjs";
+import NotificationToast from "./NotificationToast";
+
 
 interface Product {
   inventoryId: string;
@@ -44,6 +48,83 @@ const HomePage: React.FC = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [availableCart, setAvailableCart] = useState(false);
   const navigate = useNavigate();
+  // const [messages, setMessages] = useState<string[]>([]);
+  const stompClient = useRef<CompatClient | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const reloadPage = () => {
+    setTimeout(() => {
+  window.location.reload();
+}, 2000);
+    
+  };
+
+  const RefreshToken = async ()=>{
+    console.log("Refreshing token");
+    const refreshToken = localStorage.getItem("refreshToken");
+    const userEmail = localStorage.getItem("useremail")
+          const requestBody = {
+            email:userEmail,
+            token:refreshToken
+          }
+         const res =  await fetch(`http://localhost:8090/access/verify-token`, {
+          headers: { "Content-Type": "application/json" },
+       method:"POST",
+          body:JSON.stringify(requestBody)
+        });
+        const json = await res.json();
+        console.log(json);
+      if(res.ok){
+        localStorage.setItem("jwt",json.data)
+        console.log("Reloading in 2 sec");
+        reloadPage();
+      }else{
+        console.log(json,requestBody);
+        localStorage.clear();
+        navigate("/error", {
+        replace: true,
+        state: { message: "Please log in as user to access this page." }
+      });
+      }
+  }
+
+
+  useEffect(() => {
+    const token = localStorage.getItem('jwt');
+    const socket = new SockJS('http://localhost:8088/web-socket');
+    const client = Stomp.over(socket);
+    stompClient.current = client;
+
+    client.connect(
+      { Authorization: `Bearer ${token}` },
+      (frame: string) => {
+        console.log('Connected: ' + frame);
+        client.subscribe('/topic/messages', (message) => {
+          const mbody = JSON.parse(message.body);
+          // setMessages((prev) => [...prev, mbody.context]);
+          console.log(mbody);
+          setToastMessage(mbody.context);
+          // Auto-hide the toast after 4 seconds
+          setTimeout(() => setToastMessage(null), 4000);
+        }, { Authorization: `Bearer ${token}` });
+
+        client.subscribe('/topic/errors', (message) => {
+          const mbody = JSON.parse(message.body);
+          // setMessages((prev) => [...prev, mbody.context]);
+          console.log(mbody);
+          setToastMessage(mbody.context);
+          setTimeout(() => setToastMessage(null), 4000);
+        }, { Authorization: `Bearer ${token}` });
+
+      },
+      (error: any) => {
+        console.error('STOMP error:', error);
+      }
+    );
+
+
+  }, []);
+
 
   useEffect(() => {
     const loginKey = localStorage.getItem("login");
@@ -67,7 +148,7 @@ const HomePage: React.FC = () => {
         const res = await fetch("http://localhost:8082/api/inventory", {
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new Error("Failed to fetch inventory");
+        if(!res.ok) throw new Error("Failed to fetch inventory");
         const json = await res.json();
         const fetchedProducts = Array.isArray(json.data) ? json.data : [];
         setProducts(fetchedProducts);
@@ -92,10 +173,18 @@ const HomePage: React.FC = () => {
         const res = await fetch(`http://localhost:8090/user/get-user-info?email=${userEmail}`, {
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new Error("Failed to fetch user details");
-        const json = await res.json();
-        setUserProfile(json.data);
+        if (res.ok) {
+            const json = await res.json();
+          setUserProfile(json.data);
+        }
+        else{
+          console.log("Refresh token to be called")
+          RefreshToken();
+          
+        }
+      
       } catch (err) {
+
         console.error("Error fetching user details:", err);
       }
     };
@@ -135,9 +224,9 @@ const HomePage: React.FC = () => {
       setCart(cartItems);
       setAvailableCart(true);
     };
-    
-      fetchcartDetails();
-    
+
+    fetchcartDetails();
+
   }, [products]);
   function isPasswordUpdate(obj: any): obj is Password {
     return (
@@ -305,11 +394,11 @@ const HomePage: React.FC = () => {
             </span>
           </div>
           <div className="flex items-center space-x-6">
-           
-              <div className="flex items-center gap-2 text-lg font-medium text-gray-700 transition-colors">
-                Welcome,
-                <span className="text-blue-600 font-semibold">  {userProfile?.firstName}</span>
-              </div>
+
+            <div className="flex items-center gap-2 text-lg font-medium text-gray-700 transition-colors">
+              Welcome,
+              <span className="text-blue-600 font-semibold">  {userProfile?.firstName}</span>
+            </div>
 
             <button
               onClick={() => navigate("/my-orders")}
@@ -350,31 +439,31 @@ const HomePage: React.FC = () => {
                   onNavigateToCart={handleNavigateToCart}
                 />
               )}
-              
+
             </div>
             <div
-                className="relative"
-                onMouseEnter={() => setTimeout(() => {
-                  setIsHoveringUser(true);
-                }, 300)
-                }
-                onMouseLeave={() => setTimeout(() => {
-                  setIsHoveringUser(false);
-                }, 300)
-                }
-              >
-                <FaUser size={21}
+              className="relative"
+              onMouseEnter={() => setTimeout(() => {
+                setIsHoveringUser(true);
+              }, 300)
+              }
+              onMouseLeave={() => setTimeout(() => {
+                setIsHoveringUser(false);
+              }, 300)
+              }
+            >
+              <FaUser size={21}
                 className="text-gray-600 hover:text-blue-600 transition-colors"
-                 />
-                {isHoveringUser && userProfile && (
-                  <UserProfileHoverList
-                    user={userProfile}
-                    onUpdateUser={handleUpdateUser}
-                    onClose={() => setIsHoveringUser(false)}
-                  />
-                )}
-              </div>
-              <button
+              />
+              {isHoveringUser && userProfile && (
+                <UserProfileHoverList
+                  user={userProfile}
+                  onUpdateUser={handleUpdateUser}
+                  onClose={() => setIsHoveringUser(false)}
+                />
+              )}
+            </div>
+            <button
               onClick={handleLogout}
               className="px-4 py-2 text-sm font-medium text-red-600 border border-red-600 rounded-lg hover:bg-red-50 hover:text-red-700 transition-colors duration-200"
             >
@@ -385,6 +474,7 @@ const HomePage: React.FC = () => {
       </header>
 
       <main className="container mx-auto p-4 md:p-8">
+        {toastMessage && <NotificationToast message={toastMessage} />}
         {products.length === 0 ? (
           <div className="flex items-center justify-center h-64">
             <p className="text-xl text-gray-500">No products available</p>
