@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import React, { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './stylesheets/index.css'
 import App from './App.tsx'
@@ -18,7 +18,7 @@ import ShipmentDetails from './components/ShipmentDetails.tsx'
 import AdminDashboard from './pages/AdminDashboard.tsx'
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
+  <React.StrictMode>
    <BrowserRouter>
    <Routes>
     <Route path='/' element={ <App />} />
@@ -35,5 +35,5 @@ createRoot(document.getElementById('root')!).render(
     <Route path="/my-orders" element={<OrderListPage />}/>
    </Routes>
    </BrowserRouter>
-  </StrictMode>,
+  </React.StrictMode>
 )
