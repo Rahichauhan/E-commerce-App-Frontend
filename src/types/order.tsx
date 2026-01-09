@@ -8,7 +8,7 @@ export interface OrderItemResponseDTO {
 }
 
 export interface OrderResponseDTO {
-  orderId: string;
+  orderId:string;
   id:string;
   customerId: string;
   orderStatus: string;

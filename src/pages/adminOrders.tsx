@@ -40,7 +40,8 @@ export default function AdminOrderManagementPage() {
     setError(null);
     try {
       const response = await getAllOrders();
-      console.log(response);
+      console.log("Orders from backend:", response.data);
+
       if (response.data) {
         setOrders(response.data);
       } else {
@@ -127,7 +128,7 @@ export default function AdminOrderManagementPage() {
       <ul className="space-y-2">
         {orders.map((order) => (
           <li key={order.orderId} className="border p-3 rounded">
-            <strong>Order #{order.orderId}</strong> — Status: <em>{order.orderStatus}</em>{' '}
+            <strong>Order # {order.id}</strong> — Status: <em>{order.orderStatus}</em>{' '}
             <button
               onClick={() => fetchOrderDetails(order.orderId)}
               className="ml-2 px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
